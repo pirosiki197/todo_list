@@ -46,11 +46,11 @@ func validateTodo(todo Todo) error {
 func (h *Handler) CreateTodo(c echo.Context) error {
 	var todo Todo
 	if err := c.Bind(&todo); err != nil {
-		return c.NoContent(http.StatusBadRequest)
+		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 
 	if err := validateTodo(todo); err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
+		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 
 	// 本当は排他制御が必要
@@ -68,7 +68,7 @@ func (h *Handler) CreateTodo(c echo.Context) error {
 func (h *Handler) GetTodo(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		return c.NoContent(http.StatusBadRequest)
+		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 
 	todo, ok := h.todos[id]
