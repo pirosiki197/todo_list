@@ -8,3 +8,10 @@ services:
       - MYSQL_DATABASE=todo_list
     ports:
       - 3306:3306
+
+  adminer:
+    image: adminer
+    restart: always
+    container_name: adminer
+    ports:
+      - 8000:8080
