@@ -19,6 +19,20 @@ const (
 	StatusDone       = "done"
 )
 
+func (todo *Todo) SetStatus(status string) error {
+	new := *todo
+	new.Status = status
+	if err := validateTodo(new); err != nil {
+		return err
+	}
+	todo.Status = status
+	return nil
+}
+
+type UpdateStatusRequest struct {
+	Status string `json:"status"`
+}
+
 func validateTodo(todo Todo) error {
 	switch todo.Status {
 	case StatusProcessing, StatusDone:
@@ -63,4 +77,28 @@ func (h *Handler) GetTodo(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, todo)
+}
+
+// PATCH /todos/{id}
+func (h *Handler) UpdateStatus(c echo.Context) error {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err)
+	}
+
+	var req UpdateStatusRequest
+	if err := c.Bind(&req); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err)
+	}
+
+	todo, ok := h.todos[id]
+	if !ok {
+		return c.NoContent(http.StatusNotFound)
+	}
+	if err := todo.SetStatus(req.Status); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err)
+	}
+	h.todos[id] = todo
+
+	return c.NoContent(http.StatusOK)
 }

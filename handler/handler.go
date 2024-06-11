@@ -21,6 +21,7 @@ func (h *Handler) SetUpRoutes(e *echo.Echo) {
 
 	e.POST("/todos", h.CreateTodo)
 	e.GET("/todos/:id", h.GetTodo)
+	e.PATCH("/todos/:id", h.UpdateStatus)
 }
 
 func (h *Handler) Ping(c echo.Context) error {
