@@ -1,17 +1,15 @@
 package main
 
 import (
-	"net/http"
-
 	"github.com/labstack/echo/v4"
+	"github.com/pirosiki197/todo_list/handler"
 )
 
 func main() {
 	e := echo.New()
 
-	e.GET("/", func(c echo.Context) error {
-		return c.String(http.StatusOK, "Hello, world!\n")
-	})
+	handler := handler.New()
+	handler.SetUpRoutes(e)
 
 	e.Start(":8080")
 }
