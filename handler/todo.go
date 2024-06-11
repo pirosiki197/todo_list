@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -18,11 +19,24 @@ const (
 	StatusDone       = "done"
 )
 
+func validateTodo(todo Todo) error {
+	switch todo.Status {
+	case StatusProcessing, StatusDone:
+		return nil
+	default:
+		return fmt.Errorf("unknown todo status: %s", todo.Status)
+	}
+}
+
 // POST /todos
 func (h *Handler) CreateTodo(c echo.Context) error {
 	var todo Todo
 	if err := c.Bind(&todo); err != nil {
 		return c.NoContent(http.StatusBadRequest)
+	}
+
+	if err := validateTodo(todo); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
 	}
 
 	// 本当は排他制御が必要
