@@ -8,14 +8,12 @@ import (
 )
 
 type Handler struct {
-	todos map[int]Todo
-	repo  repository.Repository
+	repo repository.Repository
 }
 
 func New(repo repository.Repository) *Handler {
 	return &Handler{
-		todos: make(map[int]Todo),
-		repo:  repo,
+		repo: repo,
 	}
 }
 

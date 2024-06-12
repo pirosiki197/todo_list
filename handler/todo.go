@@ -1,11 +1,14 @@
 package handler
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/labstack/echo/v4"
+	"github.com/pirosiki197/todo_list/repository"
 )
 
 type Todo struct {
@@ -18,16 +21,6 @@ const (
 	StatusProcessing = "processing"
 	StatusDone       = "done"
 )
-
-func (todo *Todo) SetStatus(status string) error {
-	new := *todo
-	new.Status = status
-	if err := validateTodo(new); err != nil {
-		return err
-	}
-	todo.Status = status
-	return nil
-}
 
 type UpdateStatusRequest struct {
 	Status string `json:"status"`
@@ -53,15 +46,13 @@ func (h *Handler) CreateTodo(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 
-	// 本当は排他制御が必要
-	if _, ok := h.todos[todo.ID]; ok {
-		return c.NoContent(http.StatusConflict)
+	id, err := h.repo.CreateTodo(toTodoModel(todo))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
+	todo.ID = id
 
-	todo.Status = StatusProcessing
-	h.todos[todo.ID] = todo
-
-	return c.NoContent(http.StatusCreated)
+	return c.JSON(http.StatusCreated, todo)
 }
 
 // GET /todos/{id}
@@ -71,9 +62,15 @@ func (h *Handler) GetTodo(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 
-	todo, ok := h.todos[id]
-	if !ok {
-		return c.NoContent(http.StatusNotFound)
+	todoModel, err := h.repo.GetTodo(id)
+	if errors.Is(err, sql.ErrNoRows) {
+		return echo.NewHTTPError(http.StatusNotFound)
+	}
+
+	todo := Todo{
+		ID:     todoModel.ID,
+		Task:   todoModel.Task,
+		Status: todoModel.Status,
 	}
 
 	return c.JSON(http.StatusOK, todo)
@@ -91,14 +88,32 @@ func (h *Handler) UpdateStatus(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 
-	todo, ok := h.todos[id]
-	if !ok {
-		return c.NoContent(http.StatusNotFound)
+	todoModel, err := h.repo.GetTodo(id)
+	if errors.Is(err, sql.ErrNoRows) {
+		return echo.NewHTTPError(http.StatusNotFound)
 	}
-	if err := todo.SetStatus(req.Status); err != nil {
+
+	todo := Todo{
+		ID:     todoModel.ID,
+		Task:   todoModel.Task,
+		Status: req.Status,
+	}
+	if err := validateTodo(todo); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
-	h.todos[id] = todo
+
+	err = h.repo.UpdateTodo(id, toTodoModel(todo))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError)
+	}
 
 	return c.NoContent(http.StatusOK)
+}
+
+func toTodoModel(todo Todo) repository.Todo {
+	return repository.Todo{
+		ID:     todo.ID,
+		Task:   todo.Task,
+		Status: todo.Status,
+	}
 }
