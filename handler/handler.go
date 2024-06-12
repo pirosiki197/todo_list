@@ -4,15 +4,18 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	"github.com/pirosiki197/todo_list/repository"
 )
 
 type Handler struct {
 	todos map[int]Todo
+	repo  repository.Repository
 }
 
-func New() *Handler {
+func New(repo repository.Repository) *Handler {
 	return &Handler{
 		todos: make(map[int]Todo),
+		repo:  repo,
 	}
 }
 
