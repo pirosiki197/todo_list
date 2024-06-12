@@ -1,0 +1,16 @@
+{
+    "[go]": {
+        "editor.insertSpaces": false,
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+          "source.organizeImports": "explicit"
+        },
+        "editor.suggest.snippetsPreventQuickSuggestions": false,
+        "editor.defaultFormatter": "golang.go"
+      },
+      "go.toolsManagement.autoUpdate": true,
+      "go.coverOnSingleTest": true,
+      "go.coverOnSingleTestFile": true,
+      "go.testFlags": ["-v", "-race"],
+      "go.formatTool": "gofmt"
+}
