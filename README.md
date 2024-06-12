@@ -5,6 +5,7 @@
 ## 動かし方
 ```sh
 $ docker compose up -d
+$ go run main.go
 ```
 - http://localhost:8080 -> バックエンドアプリ
 - http://localhost:8000 -> adminer
