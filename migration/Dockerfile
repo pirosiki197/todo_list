@@ -1,7 +1,7 @@
 FROM alpine
 WORKDIR /migration
 
-ENV MYSQLDEF_URL=https://github.com/sqldef/sqldef/releases/download/v0.17.11/mysqldef_linux_amd64.tar.gz
+ARG MYSQLDEF_URL=https://github.com/sqldef/sqldef/releases/download/v0.17.11/mysqldef_linux_amd64.tar.gz
 
 RUN apk add curl
 COPY . .
